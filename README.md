@@ -5,7 +5,7 @@ into a workspace and send goofy images from a bot user.
 
 ## Developers
 
-This project uses Serverless framework and is split across 3 Lambda functions:
+This project uses Serverless framework and is split across the following Lambda functions:
 - the `/generate` handler
 - the `/send` handler
 - the `big` Lambda
@@ -30,5 +30,9 @@ slash command. It then uses the `response_url` to send back a message to the cha
 including the big text image.
 
 ### oauth2 callback
+This is a very boring function that's only used during the initial installation
+of the app or when a user needs to authorize the app to post its images as them.
+It receives a `code` from Slack and exchanges it for user or bot tokens which it
+then persists.
 
 

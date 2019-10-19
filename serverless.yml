@@ -51,10 +51,22 @@ functions:
   big:
     handler: commands.big
     iamRoleStatements:
+      - Effect: "Allow"
+        Action: "dynamodb:GetItem"
+        Resource:
+          Fn::Join:
+            - ""
+            - - "arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/"
+              - "Ref" : "SlackStorage"
       - Effect: "Allow"        
         Action:
           - s3:PutObject
-        Resource: "*"
+        Resource:
+          Fn::Join:
+            - ""
+            - - "arn:aws:s3:::"
+              - Ref: "BigDougieTech"
+              - "/*"
 
     tags:
       Project: BigText
@@ -70,11 +82,39 @@ functions:
       - http:
           path: 'oauth2/callback'
           method: get 
+    iamRoleStatements:
+      - Effect: "Allow"
+        Action:
+          - "dynamodb:PutItem"
+          - "dynamodb:UpdateItem"
+          - "dynamodb:DeleteItem"
+        Resource:
+          Fn::Join:
+            - ""
+            - - "arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/"
+              - "Ref" : "SlackStorage"
     tags:
       Project: BigText
 
 resources:
   Resources:
+    SlackStorage:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: "BigTextSlackStorage"
+        AttributeDefinitions:
+          - AttributeName: team
+            AttributeType: S
+          - AttributeName: user
+            AttributeType: S
+        KeySchema:
+          - AttributeName: team
+            KeyType: HASH
+          - AttributeName: user
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
     BigDougieTech:
       Type: AWS::S3::Bucket
       Properties:
