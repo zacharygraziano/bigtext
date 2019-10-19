@@ -5,34 +5,40 @@ import boto3
 import os
 import tokens
 import traceback
+import random
 
 SLACK_OAUTH2_CLIENT_ID = os.environ['SLACK_OAUTH2_CLIENT_ID']
 
+IMAGE_SCRIPTS = [
+    "comicsans"
+]
 
-def make_big_textimage(text):
+
+def make_big_text_image(text):
     """
-    use ImageMagick to make big text image, returns the path where it's stored
-    if successful and None otherwise
+    Uses one of our scripts to make an image. Returns the path
+    to that image on the local filesystem.
     """
-    filename = '/tmp/{}.png'.format(str(uuid.uuid4()))
+    image_id = str(uuid.uuid4())
+    filename = '/tmp/{}.png'.format(image_id)
+    fonts_dir = os.getcwd() + "/fonts"
+    # Pick one from our library of illustrious image scripts
+    script = random.choice(IMAGE_SCRIPTS)
+
+    # To avoid arbitrary code execution, we write the text to a file
+    # then have ImageMagick read it in (I don't know if this is strictly necessary)
+    text_filename = '/tmp/{}.txt'.format(image_id)
+    with open(text_filename, 'w') as txtfile:
+        txtfile.write(text)
+
     cmd = [
-        "convert",
-        "-size",
-        "500x400",
-        "-background",
-        "white",
-        "-font",
-        "./fonts/csmb.ttf",
-        "-gravity",
-        "Center",
-        'caption:{}'.format(text),
-        "-flatten",
-        "-bordercolor",
-        "white",
-        "-border",
-        "50x50",
+        "bash",
+        "scripts/{}.sh".format(script),
+        text_filename,
+        fonts_dir,
         filename
     ]
+
     if subprocess.call(cmd) == 0:
         return filename
 
@@ -61,7 +67,7 @@ def big(event, context):
     text = event['args']
     response_url = event['response_url']
     try:
-        image_file = make_big_textimage(text)
+        image_file = make_big_text_image(text)
         image_url = upload_image_file(image_file)
         access_token = tokens.get_slack_token(
             event['team_id'], event['user_id'])

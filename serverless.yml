@@ -2,6 +2,7 @@ service: bigtext
 package:
   include:
     - fonts/**
+    - scripts/**
   exclude:
     - node_modules/**
 provider:

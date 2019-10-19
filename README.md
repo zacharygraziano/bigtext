@@ -26,8 +26,29 @@ function asynchronously, and return a 200 OK ASAP.
 
 ### big
 This function creates the big text image based on the text provided in the original
-slash command. It then uses the `response_url` to send back a message to the channel
-including the big text image.
+slash command. It then checks the database to see if we have an access token for the
+caller.
+
+If we do have an access token, the function sends the image on their behalf to the channel
+where `/big` was originally invoked. If we don't, we use the `response_url` from the original
+invocation to ask the caller to authorize us to send messages on their behalf.
+
+#### Adding New Scripts
+
+The `/big` Slack command randomly chooses from a library of hand-crafted, chef's kiss
+worthy ImageMagick scripts for creating large text on backgrounds. To add one, add a shell
+script to the `scripts` directory. 
+
+Image scripts will be called with these arguments:
+- `$1` text file containing the big text argument
+- `$2` path of directory containing bundled fonts
+- `$3` path to where image should be written
+
+Then, in the `commands.py` file, add the name of your script (sans `.sh` file extension) to the
+`IMAGE_SCRIPTS` list.
+
+If your script needs custom fonts or other resources, they will need to be placed in the (`.gitignored`)
+`fonts/` directory prior to deploying.
 
 ### oauth2 callback
 This is a very boring function that's only used during the initial installation
