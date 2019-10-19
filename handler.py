@@ -49,6 +49,8 @@ def async_invoke_command(parsed):
     command = parsed['command']
     invocation_arguments = {
         'args': parsed['text'],
+        'team_id': parsed['team_id'],
+        'user_id': parsed['user_id'],
         'response_url': parsed['response_url'],
         'channel_id': parsed['channel_id'],
         'channel_name': parsed['channel_name'],
@@ -78,6 +80,7 @@ def generate(event, context):
     parsed = {k: v[0] for k, v in parse_qs(event['body']).items()}
     request_time = event['headers']['X-Slack-Request-Timestamp']
     signature = event['headers']['X-Slack-Signature']
+    immediate_response = None
 
     if not is_request_authorized(signature, request_time, body):
         return {
@@ -85,9 +88,15 @@ def generate(event, context):
             "body": json.dumps({"message": "Forbidden"})
         }
 
-    async_invoke_command(parsed)
+    if parsed.get('text'):
+        async_invoke_command(parsed)
+    else:
+        immediate_response = json.dumps({
+            'response_type': 'ephemeral',
+            'text': "ya gotta put text after `/big`, try `/big you ARE fancy`"
+        })
 
     return {
         "statusCode": 200,
-        "body": None
+        "body": immediate_response
     }

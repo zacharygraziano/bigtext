@@ -50,6 +50,9 @@ functions:
   # Services the /big slash command. Manually invoked.
   big:
     handler: commands.big
+    environment:
+      # Only needed to link people into the auth flow.
+      SLACK_OAUTH2_CLIENT_ID: ${ssm:/${self:provider.stage}/bigtext/client_id~true}
     iamRoleStatements:
       - Effect: "Allow"
         Action: "dynamodb:GetItem"

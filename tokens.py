@@ -12,9 +12,9 @@ def get_slack_token(team, user):
             'team': team,
             'user': user
         },
-        ProjectionExpression='token'
+        ProjectionExpression='access_token',
     ).get('Item')
-    return r['token']['S'] if item else None
+    return item['access_token'] if item else None
 
 
 def store_slack_token(team, user, token):
@@ -26,7 +26,7 @@ def store_slack_token(team, user, token):
         Item={
             'team': team,
             'user': user,
-            'token': token
+            'access_token': token
         }
     )
 
