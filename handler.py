@@ -11,7 +11,7 @@ import hashlib
 logger = logging.getLogger()
 
 LAMBDAS = {
-    '/big': os.environ['BIG_LAMBDA_ARN']
+    '/big': os.environ['BIG_LAMBDA_NAME']
 }
 
 
@@ -57,7 +57,7 @@ def async_invoke_command(parsed):
 
     lambda_name = LAMBDAS.get(command)
     if lambda_name:
-        print(f"asynchronously invoking {lambda_name}")
+        print("asynchronously invoking {}".format(lambda_name))
         invoke_lambda(lambda_name, invocation_arguments)
     else:
         # this should like, never happen becauseit means the app contains
@@ -85,7 +85,9 @@ def generate(event, context):
             "body": json.dumps({"message": "Forbidden"})
         }
 
+    async_invoke_command(parsed)
+
     return {
         "statusCode": 200,
-        "body": json.dumps(parsed)
+        "body": None
     }

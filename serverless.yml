@@ -1,5 +1,9 @@
 service: bigtext 
-
+package:
+  include:
+    - fonts/**
+  exclude:
+    - node_modules/**
 provider:
   name: aws
   runtime: python3.7
@@ -23,7 +27,6 @@ custom:
     stage: ${self:provider.stage}
     createRoute53Record: true
 
-
 functions:
   # provides the /bigtext/generate endpoint for handling various Slack slash commands
   generate:
@@ -31,7 +34,7 @@ functions:
     environment:
       SLACK_OAUTH_TOKEN: ${ssm:/${self:provider.stage}/bigtext/token~true}
       SLACK_SIGNING_SECRET: ${ssm:/${self:provider.stage}/bigtext/signingsecret~true}
-      BIG_LAMBDA_ARN: "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${self:provider.stage}-big"
+      BIG_LAMBDA_NAME: "${self:service}-${self:provider.stage}-big"
     iamRoleStatements:
       - Effect: "Allow"
         Action:
