@@ -1,0 +1,98 @@
+service: bigtext 
+
+provider:
+  name: aws
+  runtime: python3.7
+  stage: prod
+
+plugins:
+  - serverless-python-requirements
+  - serverless-domain-manager
+  - serverless-iam-roles-per-function
+  - serverless-pseudo-parameters
+
+custom:
+  pythonRequirements:
+    # Run pip install in a Linux Docker container, in case there are
+    # native dependencies.
+    dockerizePip: false
+  customDomain:
+    domainName: '***REMOVED***'
+    certificateName: 'dougie.tech'
+    basePath: "bigtext"
+    stage: ${self:provider.stage}
+    createRoute53Record: true
+
+
+functions:
+  # provides the /bigtext/generate endpoint for handling various Slack slash commands
+  generate:
+    handler: handler.generate
+    environment:
+      SLACK_OAUTH_TOKEN: ${ssm:/${self:provider.stage}/bigtext/token~true}
+      SLACK_SIGNING_SECRET: ${ssm:/${self:provider.stage}/bigtext/signingsecret~true}
+      BIG_LAMBDA_ARN: "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${self:provider.stage}-big"
+    iamRoleStatements:
+      - Effect: "Allow"
+        Action:
+          - lambda:InvokeFunction
+        Resource: "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${self:provider.stage}-big"
+    events:
+      - http:
+          path: generate 
+          method: post 
+    tags:
+      Project: BigText
+  
+  # Services the /big slash command. Manually invoked.
+  big:
+    handler: commands.big
+    iamRoleStatements:
+      - Effect: "Allow"        
+        Action:
+          - s3:PutObject
+        Resource: "*"
+
+    tags:
+      Project: BigText
+  
+  # used for installation of the application
+  oauth2callback:
+    handler: oauth.callback
+    environment:
+      SLACK_OAUTH2_CLIENT_ID: ${ssm:/${self:provider.stage}/bigtext/client_id~true}
+      SLACK_OAUTH2_CLIENT_SECRET: ${ssm:/${self:provider.stage}/bigtext/client_secret~true}
+
+    events:
+      - http:
+          path: 'oauth2/callback'
+          method: get 
+    tags:
+      Project: BigText
+
+resources:
+  Resources:
+    BigDougieTech:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: "big.dougie.tech"
+    PublicImages:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        PolicyDocument:
+          Id: "AllowReads"
+          Version: "2012-10-17"
+          Statement:
+            - Sid: "PublicReadForGetObject"
+              Effect: "Allow"
+              Action: "s3:GetObject"
+              Principal: "*"
+              Resource:
+                Fn::Join:
+                  - ""
+                  - - "arn:aws:s3:::"
+                    - Ref: "BigDougieTech"
+                    - "/*"
+        Bucket:
+          Ref: "BigDougieTech"
+

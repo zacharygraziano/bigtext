@@ -1,0 +1,17 @@
+{
+  "name": "bigtext",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Zach Graziano",
+  "license": "MIT",
+  "dependencies": {
+    "serverless-domain-manager": "3.2.7",
+    "serverless-iam-roles-per-function": "^2.0.2",
+    "serverless-pseudo-parameters": "^2.5.0",
+    "serverless-python-requirements": "^4.3.0"
+  }
+}
