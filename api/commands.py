@@ -3,9 +3,10 @@ import subprocess
 import uuid
 import boto3
 import os
-import tokens
 import traceback
 import random
+
+from api import tokens
 
 SLACK_OAUTH2_CLIENT_ID = os.environ['SLACK_OAUTH2_CLIENT_ID']
 

@@ -31,7 +31,7 @@ custom:
 functions:
   # provides the /bigtext/generate endpoint for handling various Slack slash commands
   generate:
-    handler: handler.generate
+    handler: "api/handler.generate"
     environment:
       SLACK_OAUTH_TOKEN: ${ssm:/${self:provider.stage}/bigtext/token~true}
       SLACK_SIGNING_SECRET: ${ssm:/${self:provider.stage}/bigtext/signingsecret~true}
@@ -50,7 +50,7 @@ functions:
   
   # Services the /big slash command. Manually invoked.
   big:
-    handler: commands.big
+    handler: "api/commands.big"
     environment:
       # Only needed to link people into the auth flow.
       SLACK_OAUTH2_CLIENT_ID: ${ssm:/${self:provider.stage}/bigtext/client_id~true}
@@ -77,7 +77,7 @@ functions:
   
   # used for installation of the application
   oauth2callback:
-    handler: oauth.callback
+    handler: "api/oauth.callback"
     environment:
       SLACK_OAUTH2_CLIENT_ID: ${ssm:/${self:provider.stage}/bigtext/client_id~true}
       SLACK_OAUTH2_CLIENT_SECRET: ${ssm:/${self:provider.stage}/bigtext/client_secret~true}
