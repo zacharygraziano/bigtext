@@ -59,7 +59,9 @@ def make_big_text_image(text, response_url):
 def upload_image_file(full_path):
     obj_key = "content/" + full_path.split('/')[-1]
     bucket = boto3.resource('s3').Bucket(S3_CONTENT_BUCKET)
-    bucket.upload_file(full_path, obj_key)
+    bucket.upload_file(full_path, obj_key, ExtraArgs={
+        'ContentType': "image/{}".format(full_path.split(".")[-1])
+    })
     return 'https://{}/{}'.format(WEB_APP_URL, obj_key)
 
 
