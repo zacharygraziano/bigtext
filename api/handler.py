@@ -14,6 +14,8 @@ LAMBDAS = {
     '/big': os.environ['BIG_LAMBDA_NAME']
 }
 
+MAX_TEXT_LENGTH = 280
+
 
 def is_request_authorized(signature, timestamp, body):
     # from https://janikarhunen.fi/verify-slack-requests-in-aws-lambda-and-python
@@ -87,9 +89,14 @@ def generate(event, context):
             "statusCode": 403,
             "body": json.dumps({"message": "Forbidden"})
         }
-
-    if parsed.get('text'):
+    text = parsed.get('text')
+    if text and len(text) <= MAX_TEXT_LENGTH:
         async_invoke_command(parsed)
+    elif text:
+        immediate_response = json.dumps({
+            'response_type': 'ephemeral',
+            'text': "i can't make big text with a message longer than :two: :eight: :zero: characters"
+        })
     else:
         immediate_response = json.dumps({
             'response_type': 'ephemeral',

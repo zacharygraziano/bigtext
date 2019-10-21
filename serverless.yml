@@ -5,6 +5,7 @@ package:
     - scripts/**
   exclude:
     - node_modules/**
+    - site/**
 provider:
   name: aws
   runtime: python3.7
