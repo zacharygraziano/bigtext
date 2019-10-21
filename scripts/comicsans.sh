@@ -1,5 +1,4 @@
 #!/bin/bash
-echo $2
 cat $1 | xargs -I {} \
 convert \
     -size 500x400 \

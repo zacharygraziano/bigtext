@@ -9,6 +9,8 @@ import random
 from api import tokens
 
 SLACK_OAUTH2_CLIENT_ID = os.environ['SLACK_OAUTH2_CLIENT_ID']
+S3_CONTENT_BUCKET = os.environ['S3_CONTENT_BUCKET']
+WEB_APP_URL = os.environ['WEB_APP_URL']
 
 IMAGE_SCRIPTS = [
     "comicsans"
@@ -26,6 +28,7 @@ def make_big_text_image(text):
     # Pick one from our library of illustrious image scripts
     script = random.choice(IMAGE_SCRIPTS)
 
+    print("generating image {} with text {}".format(image_id, text))
     # To avoid arbitrary code execution, we write the text to a file
     # then have ImageMagick read it in (I don't know if this is strictly necessary)
     text_filename = '/tmp/{}.txt'.format(image_id)
@@ -45,10 +48,10 @@ def make_big_text_image(text):
 
 
 def upload_image_file(full_path):
-    obj_key = full_path.split('/')[-1]
-    bucket = boto3.resource('s3').Bucket('big.dougie.tech')
+    obj_key = "content/" + full_path.split('/')[-1]
+    bucket = boto3.resource('s3').Bucket(S3_CONTENT_BUCKET)
     bucket.upload_file(full_path, obj_key)
-    return 'https://s3.amazonaws.com/big.dougie.tech/{}'.format(obj_key)
+    return 'https://{}/{}'.format(WEB_APP_URL, obj_key)
 
 
 def send_error_message(response_url):
@@ -129,6 +132,10 @@ def send_image_to_channel(access_token, channel_id, text, image_url, response_ur
     elif resp.status_code != 200:
         print("Slack API error with status code {}: {}").format(
             resp.status_code, resp.text)
+        send_error_message(response_url)
+    elif resp.status_code == 200 and not resp.json()['ok']:
+        print("Slack says we're NOT good {}".format(resp.text))
+        send_error_message(response_url)
 
 
 def request_authorization_from_user(response_url, text, image_url):

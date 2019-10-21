@@ -34,7 +34,6 @@ functions:
   generate:
     handler: "api/handler.generate"
     environment:
-      SLACK_OAUTH_TOKEN: ${ssm:/${self:provider.stage}/bigtext/token~true}
       SLACK_SIGNING_SECRET: ${ssm:/${self:provider.stage}/bigtext/signingsecret~true}
       BIG_LAMBDA_NAME: "${self:service}-${self:provider.stage}-big"
     iamRoleStatements:
@@ -53,6 +52,8 @@ functions:
   big:
     handler: "api/commands.big"
     environment:
+      S3_CONTENT_BUCKET: ${self:custom.vars.S3_BUCKET_NAME}
+      WEB_APP_URL: ${self:custom.vars.WEB_APP_URL}
       # Only needed to link people into the auth flow.
       SLACK_OAUTH2_CLIENT_ID: ${ssm:/${self:provider.stage}/bigtext/client_id~true}
     iamRoleStatements:
@@ -126,17 +127,18 @@ resources:
       Properties:
         BucketName: ${self:custom.vars.S3_BUCKET_NAME}
 
-    PublicImages:
+    CloudFrontGetObject:
       Type: AWS::S3::BucketPolicy
       Properties:
         PolicyDocument:
-          Id: "AllowReads"
+          Id: "CloudFrontAllowReads"
           Version: "2012-10-17"
           Statement:
-            - Sid: "PublicReadForGetObject"
+            - Sid: "CloudFrontReadForGetObject"
               Effect: "Allow"
               Action: "s3:GetObject"
-              Principal: "*"
+              Principal:
+                CanonicalUser: !GetAtt [WebDistributionOAI, S3CanonicalUserId]
               Resource:
                 Fn::Join:
                   - ""
