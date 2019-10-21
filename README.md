@@ -56,4 +56,15 @@ of the app or when a user needs to authorize the app to post its images as them.
 It receives a `code` from Slack and exchanges it for user or bot tokens which it
 then persists.
 
+# deploying
+
+Deploying this requires a `variables.yml` file with the following:
+```yaml
+ACM_CERTIFICATE_ID: ""
+ROUTE_53_HOSTED_ZONE_ID: ""
+S3_BUCKET_NAME: ""
+WEB_APP_URL: ""
+API_BASE_URL: ""
+EDGE_LAMBDA_ARN: ""
+```
 

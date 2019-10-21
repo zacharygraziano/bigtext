@@ -2,3 +2,4 @@
 node_modules/
 fonts/
 api/*.pyc
+variables.yml

@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /content/*
+Disallow: /images/*
+Disallow: /css/*
+Disallow: /scripts/*
+Disallow: /error.html
+Disallow: /success.html
+Disallow: /404.html
