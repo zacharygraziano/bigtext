@@ -1,28 +1,34 @@
-# BIG TEXT
+# big text
 
-BIG TEXT is an image macro Slack app. It makes slash commands that you can install
-into a workspace and send goofy images from a bot user.
+BIG TEXT is a Slack command (`/big`) that you can use to generate images with large
+text and send them to your coworkers.
+
+_example_
+
+```
+/big BIG TEXT  is a Slack command (`/big`) that you can use to generate images with large text and send them to your coworkers.
+```
+might make 
+
+![big text example](https://big.dougie.tech/content/066563d5-9723-4961-beab-ddeda58bcae6.png)
+
+## Installation
+
+To install to your Slack visit the [website for the app](https://big.dougie.tech)
 
 ## Developers
 
 This project uses Serverless framework and is split across the following Lambda functions:
 - the `/generate` handler
-- the `/send` handler
 - the `big` Lambda
 - the `oauth2 callback` Lambda
+- the `/events` handler
 
 ### Generate
-Located in `handler.py`, this function services an HTTP endpoint that Slack calls
+This function services an HTTP endpoint that Slack calls
 when slash commands are invoked. Its jobs are to (a) verify that it is indeed Slack
-who is making the request and (b) dispatch the request to the appropriate handler
-for it.
-
-Why does it work this way? Slack requires you to respond to a slash command rather
-quickly (within 3s) and suggests that longer running operations form messages using
-response bodies, but rather by making requests to the `response_url` paramter in
-the request. However, since this is Lambda, we can't return a `200` and keep doing
-stuff. So we quickly glance at the command, use the Lambda API to invoke the correct
-function asynchronously, and return a 200 OK ASAP.
+who is making the request, (b) dispatch the request to the appropriate handler
+for it (asynchronously) and (c) return a 200 to Slack as soon as it can.
 
 ### big
 This function creates the big text image based on the text provided in the original
@@ -47,7 +53,7 @@ Image scripts will be called with these arguments:
 Then, in the `commands.py` file, add the name of your script (sans `.sh` file extension) to the
 `IMAGE_SCRIPTS` list.
 
-If your script needs custom fonts or other resources, they will need to be placed in the (`.gitignored`)
+If your script needs custom fonts or other resources, they will need to be placed in the (`.gitignore`d)
 `fonts/` directory prior to deploying.
 
 ### oauth2 callback
@@ -66,5 +72,7 @@ S3_BUCKET_NAME: ""
 WEB_APP_URL: ""
 API_BASE_URL: ""
 EDGE_LAMBDA_ARN: ""
+CERTIFICATE_NAME: ""
 ```
+
 
