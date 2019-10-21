@@ -13,24 +13,33 @@ S3_CONTENT_BUCKET = os.environ['S3_CONTENT_BUCKET']
 WEB_APP_URL = os.environ['WEB_APP_URL']
 
 IMAGE_SCRIPTS = [
-    "comicsans"
+    ("comicsans", "png"),
+    ("silly", "png"),
+    ("strong", "png")
+    # these are too slow :(
+    # ("rotating", "gif"),
+    # ("waving", "gif")
 ]
 
 
-def make_big_text_image(text):
+def make_big_text_image(text, response_url):
     """
     Uses one of our scripts to make an image. Returns the path
     to that image on the local filesystem.
     """
     image_id = str(uuid.uuid4())
-    filename = '/tmp/{}.png'.format(image_id)
     fonts_dir = os.getcwd() + "/fonts"
     # Pick one from our library of illustrious image scripts
-    script = random.choice(IMAGE_SCRIPTS)
+    (script, file_ext) = random.choice(IMAGE_SCRIPTS)
 
-    print("generating image {} with text {}".format(image_id, text))
-    # To avoid arbitrary code execution, we write the text to a file
-    # then have ImageMagick read it in (I don't know if this is strictly necessary)
+    filename = '/tmp/{}.{}'.format(image_id, file_ext)
+
+    print("generating image {} with text {} using `{}`".format(
+        image_id, text, script))
+
+    if file_ext == "gif":
+        send_might_take_a_while_message(response_url)
+
     text_filename = '/tmp/{}.txt'.format(image_id)
     with open(text_filename, 'w') as txtfile:
         txtfile.write(text)
@@ -54,6 +63,16 @@ def upload_image_file(full_path):
     return 'https://{}/{}'.format(WEB_APP_URL, obj_key)
 
 
+def send_might_take_a_while_message(response_url):
+    requests.post(
+        response_url,
+        json={
+            'response_type': "ephemeral",
+            'text': ":hourglass_flowing_sand: i'm workin', this one might take a little bit"
+        }
+    )
+
+
 def send_error_message(response_url):
     requests.post(
         response_url,
@@ -71,7 +90,7 @@ def big(event, context):
     text = event['args']
     response_url = event['response_url']
     try:
-        image_file = make_big_text_image(text)
+        image_file = make_big_text_image(text, response_url)
         image_url = upload_image_file(image_file)
         access_token = tokens.get_slack_token(
             event['team_id'], event['user_id'])

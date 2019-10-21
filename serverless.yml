@@ -10,6 +10,7 @@ provider:
   name: aws
   runtime: python3.7
   stage: prod
+  memorySize: 128
 
 plugins:
   - serverless-python-requirements
@@ -69,6 +70,8 @@ functions:
   # Services the /big slash command. Manually invoked.
   big:
     handler: "api/commands.big"
+    timeout: 15
+    memorySize: 832
     environment:
       S3_CONTENT_BUCKET: ${self:custom.vars.S3_BUCKET_NAME}
       WEB_APP_URL: ${self:custom.vars.WEB_APP_URL}
