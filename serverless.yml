@@ -33,7 +33,7 @@ custom:
 functions:
   # provides the /bigtext/generate endpoint for handling various Slack slash commands
   generate:
-    handler: "api/handler.generate"
+    handler: "api/commands_handler.generate"
     environment:
       SLACK_SIGNING_SECRET: ${ssm:/${self:provider.stage}/bigtext/signingsecret~true}
       BIG_LAMBDA_NAME: "${self:service}-${self:provider.stage}-big"
@@ -46,6 +46,23 @@ functions:
       - http:
           path: generate 
           method: post 
+    tags:
+      Project: BigText
+  # provides the /bigtext/events endpoint for handling incoming Slack events
+  event_handler:
+    handler: "api/events_handler.events"
+    environment:
+      SLACK_SIGNING_SECRET: ${ssm:/${self:provider.stage}/bigtext/signingsecret~true}
+      BIG_LAMBDA_NAME: "${self:service}-${self:provider.stage}-big"
+    iamRoleStatements:
+      - Effect: "Allow"
+        Action:
+          - lambda:InvokeFunction
+        Resource: "arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:${self:service}-${self:provider.stage}-big"
+    events:
+      - http:
+          path: events
+          method: post
     tags:
       Project: BigText
   

@@ -32,7 +32,7 @@ def persist_auth_tokens(token_response):
     """
     scopes = token_response['scope'].split(",")
     if token_response.get('bot'):
-        pass
+        persist_installation_tokens(token_response)
     if token_response.get('user_id') and token_response.get('access_token'):
         persist_user_authorization_tokens(token_response)
 
