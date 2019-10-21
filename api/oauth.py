@@ -1,15 +1,13 @@
 import json
 import requests
 import os
+import traceback
 
 from api import tokens
 
 
-def forbidden():
-    return {
-        "statusCode": 403,
-        "body": json.dumps({'error': "Forbidden"})
-    }
+SLACK_OAUTH2_APP_ID = os.environ['SLACK_OAUTH2_APP_ID']
+WEB_APP_URL = os.environ['WEB_APP_URL']
 
 
 def slack_code_for_token_exchange(code):
@@ -60,15 +58,25 @@ def callback(event, context):
     querystring = event['queryStringParameters']
     code = querystring.get('code') if querystring else None
 
-    # TODO figure out whether people are in a browser doing this
-    # and give them HTML or send them back to slack, also handle errors
-    if not code:
-        return forbidden()
+    redirect_location = None
 
-    token_response = slack_code_for_token_exchange(code)
-    persist_auth_tokens(token_response)
+    if not code:
+        redirect_location = "https://{}/404.html".format(WEB_APP_URL)
+    else:
+        try:
+            token_response = slack_code_for_token_exchange(code)
+            persist_auth_tokens(token_response)
+            redirect_location = "https://slack.com/app_redirect?app={}".format(
+                SLACK_OAUTH2_APP_ID)
+        except:
+            tb = traceback.format_exc()
+            print("Received error: {} in oauth2 flow\n ".format(tb))
+            redirect_location = "https://{}/oauth_error.html".format(
+                WEB_APP_URL)
 
     return {
-        "statusCode": 200,
-        "body": json.dumps({'message': "OK"})
+        "statusCode": 302,
+        "headers": {
+            "Location": redirect_location
+        }
     }

@@ -82,8 +82,10 @@ functions:
   oauth2callback:
     handler: "api/oauth.callback"
     environment:
+      WEB_APP_URL: ${self:custom.vars.WEB_APP_URL}
       SLACK_OAUTH2_CLIENT_ID: ${ssm:/${self:provider.stage}/bigtext/client_id~true}
       SLACK_OAUTH2_CLIENT_SECRET: ${ssm:/${self:provider.stage}/bigtext/client_secret~true}
+      SLACK_OAUTH2_APP_ID: ${ssm:/${self:provider.stage}/bigtext/app_id~true}
 
     events:
       - http:
