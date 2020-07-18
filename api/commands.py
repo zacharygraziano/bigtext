@@ -13,12 +13,11 @@ S3_CONTENT_BUCKET = os.environ['S3_CONTENT_BUCKET']
 WEB_APP_URL = os.environ['WEB_APP_URL']
 
 IMAGE_SCRIPTS = [
-    ("comicsans", "png"),
-    ("silly", "png"),
-    ("strong", "png")
-    # these are too slow :(
-    # ("rotating", "gif"),
-    # ("waving", "gif")
+    # ("comicsans", "png"),
+    # ("silly", "png"),
+    # ("strong", "png")
+    ("rotating", "gif"),
+    ("waving", "gif")
 ]
 
 
